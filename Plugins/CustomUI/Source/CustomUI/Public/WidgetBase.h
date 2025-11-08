@@ -7,7 +7,7 @@
 #include "Blueprint/UserWidget.h"
 #include "WidgetBase.generated.h"
 
-UENUM()
+UENUM(BlueprintType)
 enum class EWidgetState : uint8
 {
 	Hide,
@@ -20,60 +20,48 @@ UENUM(BlueprintType)
 enum class EWidgetHideType : uint8
 {
 	NA					UMETA(Hidden),
-	RemoveFromParent,
+	RemoveFromParent	UMETA(Hidden),
 	Collapsed,
 	Hidden
 };
 
-DECLARE_DELEGATE_OneParam(FD_OnWidgetStateChanged, EWidgetState);
-DECLARE_MULTICAST_DELEGATE_OneParam(FMD_OnWidgetStateChanged, EWidgetState);
-DECLARE_DYNAMIC_DELEGATE_OneParam(FDD_OnWidgetStateChanged, EWidgetState, _old_state);
+DECLARE_DELEGATE_OneParam(F_OnWidgetStateChanged, EWidgetState);
+DECLARE_MULTICAST_DELEGATE_OneParam(FM_OnWidgetStateChanged, EWidgetState);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FD_OnWidgetStateChanged, EWidgetState, _old_state);
 
-/**
- Start - Idle - Hide 애니메이션 관리
- */
-UCLASS()
+class USoundCue;
+
+UCLASS(Abstract)
 class CUSTOMUI_API UWidgetBase : public UUserWidget
 {
 	GENERATED_BODY()
 
-#pragma region AnimState
 private:
-	// BindWidgetAnim Names
-	UPROPERTY(VisibleAnywhere, Category = "Anim", meta = (Tooltip = "바인딩 애니메이션 이름"))
-	FName OnShowAnimName = FName(TEXT("OnShowAnim"));
-
-	UPROPERTY(VisibleAnywhere, Category = "Anim", meta = (Tooltip = "바인딩 애니메이션 이름"))
-	FName IdleAnimName = FName(TEXT("IdleAnim"));
-
-	UPROPERTY(VisibleAnywhere, Category = "Anim", meta = (Tooltip = "바인딩 애니메이션 이름"))
-	FName OnHideAnimName = FName(TEXT("OnHideAnim"));
-
 	// Widget Anims
 	UPROPERTY(Transient, meta = (BindWidgetAnimOptional))
-	TObjectPtr<UWidgetAnimation> OnShowAnim = nullptr;
+	TObjectPtr<UWidgetAnimation> ShowAnim = nullptr;
 
 	UPROPERTY(Transient, meta = (BindWidgetAnimOptional))
 	TObjectPtr<UWidgetAnimation> IdleAnim = nullptr;
 
 	UPROPERTY(Transient, meta = (BindWidgetAnimOptional))
-	TObjectPtr<UWidgetAnimation> OnHideAnim = nullptr;
+	TObjectPtr<UWidgetAnimation> HideAnim = nullptr;
 
 	UPROPERTY()
-	TObjectPtr<UWidgetAnimation> _CurrentStateAnim = nullptr;
+	TObjectPtr<UWidgetAnimation> _CurrentAnim = nullptr;
 
 	UPROPERTY(EditAnywhere, Category = "Sound")
-	TObjectPtr<USoundBase> OnShowSound = nullptr;
+	TObjectPtr<USoundCue> _ShowSound = nullptr;
 
 	UPROPERTY(EditAnywhere, Category = "Sound")
-	TObjectPtr<USoundBase> OnHideSound = nullptr;
+	TObjectPtr<USoundCue> _HideSound = nullptr;
 
 private:
 	EWidgetState _WidgetState = EWidgetState::Hide;
 
 	EWidgetHideType _WidgetHideType = EWidgetHideType::NA;
 
-	FMD_OnWidgetStateChanged Event_OnWidgetStateChanged;
+	FM_OnWidgetStateChanged _OnWidgetStateChanged;
 
 private:
 	void SetState(EWidgetState _new_state);
@@ -82,14 +70,17 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Hide(EWidgetHideType _type, bool _force_immediately);
 
+	UFUNCTION(BlueprintCallable)
+	void Close(bool _force_immediately);
+
 private:
 	void HideWidget();
 
 // Event
 public:
 	UFUNCTION(BlueprintCallable)
-	void BindOnWidgetStateChanged(FDD_OnWidgetStateChanged _proc);
-	void BindOnWidgetStateChanged(FD_OnWidgetStateChanged& _proc);
+	void BindOnWidgetStateChanged(FD_OnWidgetStateChanged _proc);
+	void BindOnWidgetStateChanged(F_OnWidgetStateChanged& _proc);
 
 	UFUNCTION(BlueprintNativeEvent)
 	void OnStateChanged(EWidgetState _old_state);
@@ -99,8 +90,6 @@ public:
 public:
 	UFUNCTION(BlueprintPure)
 	EWidgetState GetWidgetState() const { return _WidgetState; }
-
-#pragma endregion
 
 protected:
 	virtual void NativeOnInitialized() override;
@@ -114,8 +103,7 @@ protected:
 	virtual void OnVisibilityChanged(ESlateVisibility _visibility);
 
 	// "BP"에서 변수에 변경이 있을 때 호출됩니다.
-	UFUNCTION(BlueprintNativeEvent, meta = (ForceAsFunction))
+	UFUNCTION(BlueprintImplementableEvent, meta = (ForceAsFunction))
 	void OnSynchronizeProperties();
-	void OnSynchronizeProperties_Implementation() {};
 
 };

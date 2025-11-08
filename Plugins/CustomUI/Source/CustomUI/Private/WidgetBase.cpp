@@ -5,13 +5,17 @@
 #include "Animation/WidgetAnimation.h"
 #include "Blueprint/WidgetTree.h"
 #include "MovieScene.h"
+#include "Sound/SoundCue.h"
 
 void UWidgetBase::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
+	OnNativeVisibilityChanged.Clear();
 	OnNativeVisibilityChanged.AddUObject(this, &UWidgetBase::OnVisibilityChanged);
-	Event_OnWidgetStateChanged.AddUObject(this, &UWidgetBase::OnStateChanged);
+	
+	_OnWidgetStateChanged.Clear();
+	_OnWidgetStateChanged.AddUObject(this, &UWidgetBase::OnStateChanged);
 }
 
 void UWidgetBase::NativeConstruct()
@@ -35,18 +39,18 @@ void UWidgetBase::OnAnimationFinished_Implementation(const UWidgetAnimation* _an
 {
 	Super::OnAnimationFinished_Implementation(_anim);
 
-	if (IsValid(_anim) && _CurrentStateAnim == _anim)
+	if (IsValid(_anim) && _CurrentAnim == _anim)
 	{
 		switch (_WidgetState)
 		{
 		case EWidgetState::OnShow:
-			if (_CurrentStateAnim == OnShowAnim)
+			if (_CurrentAnim == ShowAnim)
 			{
 				SetState(EWidgetState::Idle);
 			}
 			break;
 		case EWidgetState::OnHide:
-			if (_CurrentStateAnim == OnHideAnim)
+			if (_CurrentAnim == HideAnim)
 			{
 				SetState(EWidgetState::Hide);
 			}
@@ -54,6 +58,16 @@ void UWidgetBase::OnAnimationFinished_Implementation(const UWidgetAnimation* _an
 		default:
 			break;
 		}
+	}
+}
+
+void UWidgetBase::OnVisibilityChanged(ESlateVisibility _visibility)
+{
+	if (_visibility == ESlateVisibility::Collapsed || _visibility == ESlateVisibility::Hidden)
+	{
+		SetRenderOpacity(0.0f);
+		_CurrentAnim = nullptr;
+		_WidgetState = EWidgetState::Hide;
 	}
 }
 
@@ -65,22 +79,7 @@ void UWidgetBase::SetState(EWidgetState _new_state)
 	EWidgetState _old_state = _WidgetState;
 	_WidgetState = _new_state;
 
-	Event_OnWidgetStateChanged.Broadcast(_old_state);
-}
-
-void UWidgetBase::BindOnWidgetStateChanged(FDD_OnWidgetStateChanged _proc)
-{
-	Event_OnWidgetStateChanged.AddWeakLambda(this,
-		[Proc(MoveTemp(_proc))](EWidgetState _old_state)
-		{
-			Proc.ExecuteIfBound(_old_state);
-		}
-	);
-}
-
-void UWidgetBase::BindOnWidgetStateChanged(FD_OnWidgetStateChanged& _proc)
-{
-	Event_OnWidgetStateChanged.Add(MoveTemp(_proc));
+	_OnWidgetStateChanged.Broadcast(_old_state);
 }
 
 void UWidgetBase::OnStateChanged_Implementation(EWidgetState _old_state)
@@ -98,27 +97,27 @@ void UWidgetBase::OnStateChanged_Implementation(EWidgetState _old_state)
 	{
 	case EWidgetState::OnShow:
 		SetRenderOpacity(1.0f);
-		anim_to_play = OnShowAnim;
-		PlaySound(OnShowSound);
+		anim_to_play = ShowAnim;
+		PlaySound(_ShowSound);
 		break;
 	case EWidgetState::Idle:
 		anim_to_play = IdleAnim;
 		is_idle = true;
 		break;
 	case EWidgetState::OnHide:
-		anim_to_play = OnHideAnim;
-		PlaySound(OnHideSound);
+		anim_to_play = HideAnim;
+		PlaySound(_HideSound);
 		break;
 	default:
 		break;
 	}
 
-	StopAnimation(_CurrentStateAnim); // Event는 호출되지 않는다.
+	StopAnimation(_CurrentAnim); // Event는 호출되지 않는다.
 
 	if (IsValid(anim_to_play))
 	{
-		_CurrentStateAnim = MoveTemp(anim_to_play);
-		PlayAnimation(_CurrentStateAnim, 0.0f, is_idle ? 0 : 1);
+		_CurrentAnim = MoveTemp(anim_to_play);
+		PlayAnimation(_CurrentAnim, 0.0f, is_idle ? 0 : 1);
 	}
 	else
 	{
@@ -155,6 +154,11 @@ void UWidgetBase::Hide(EWidgetHideType _type, bool _force_immediately)
 	}
 }
 
+void UWidgetBase::Close(bool _force_immediately)
+{
+	Hide(EWidgetHideType::RemoveFromParent, _force_immediately);
+}
+
 void UWidgetBase::HideWidget()
 {
 	switch (_WidgetHideType)
@@ -176,14 +180,19 @@ void UWidgetBase::HideWidget()
 	_WidgetHideType = EWidgetHideType::NA;
 }
 
-void UWidgetBase::OnVisibilityChanged(ESlateVisibility _visibility)
+void UWidgetBase::BindOnWidgetStateChanged(FD_OnWidgetStateChanged _proc)
 {
-	if (_visibility == ESlateVisibility::Collapsed || _visibility == ESlateVisibility::Hidden)
-	{
-		SetRenderOpacity(0.0f);
-		_CurrentStateAnim = nullptr;
-		_WidgetState = EWidgetState::Hide;
-	}
+	_OnWidgetStateChanged.AddWeakLambda(this,
+		[Proc(MoveTemp(_proc))](EWidgetState _old_state)
+		{
+			Proc.ExecuteIfBound(_old_state);
+		}
+	);
+}
+
+void UWidgetBase::BindOnWidgetStateChanged(F_OnWidgetStateChanged& _proc)
+{
+	_OnWidgetStateChanged.Add(MoveTemp(_proc));
 }
 
 void UWidgetBase::SynchronizeProperties()
