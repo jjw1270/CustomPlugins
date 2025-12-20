@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Widgets/WidgetBase.h"
-#include "Widgets/Components/Buttons/RadioButton.h"
+#include "Components/RadioButton.h"
 #include "RadioButtonGroup.generated.h"
 
 

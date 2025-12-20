@@ -1,19 +1,19 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Widgets/Components/Buttons/RadioButton.h"
+#include "Components/ToggleButton.h"
 #include "Components/Border.h"
 #include "Components/TextBlock.h"
 
 
-void URadioButton::SynchronizeProperties()
+void UToggleButton::SynchronizeProperties()
 {
 	Super::SynchronizeProperties();
 
 	OnSelectChanged();
 }
 
-void URadioButton::NativeOnMouseEnter(const FGeometry& _geo, const FPointerEvent& _mouse_event)
+void UToggleButton::NativeOnMouseEnter(const FGeometry& _geo, const FPointerEvent& _mouse_event)
 {
 	Super::NativeOnMouseEnter(_geo, _mouse_event);
 
@@ -21,14 +21,14 @@ void URadioButton::NativeOnMouseEnter(const FGeometry& _geo, const FPointerEvent
 	{
 		SetButtonState(EButtonState::Disabled);
 	}
-	else if (_IsSelected == false && _ButtonState != EButtonState::Hovered)
+	else if (_ButtonState != EButtonState::Hovered)
 	{
 		SetButtonState(EButtonState::Hovered);
 		PlaySound(_HoverSound);
 	}
 }
 
-void URadioButton::NativeOnMouseLeave(const FPointerEvent& _mouse_event)
+void UToggleButton::NativeOnMouseLeave(const FPointerEvent& _mouse_event)
 {
 	Super::NativeOnMouseLeave(_mouse_event);
 
@@ -42,7 +42,7 @@ void URadioButton::NativeOnMouseLeave(const FPointerEvent& _mouse_event)
 	}
 }
 
-FReply URadioButton::NativeOnMouseButtonDown(const FGeometry& _geo, const FPointerEvent& _mouse_event)
+FReply UToggleButton::NativeOnMouseButtonDown(const FGeometry& _geo, const FPointerEvent& _mouse_event)
 {
 	Super::NativeOnMouseButtonDown(_geo, _mouse_event);
 
@@ -50,7 +50,7 @@ FReply URadioButton::NativeOnMouseButtonDown(const FGeometry& _geo, const FPoint
 	{
 		SetButtonState(EButtonState::Disabled);
 	}
-	else if (_IsSelected == false && _ButtonState == EButtonState::Hovered)
+	else if (_ButtonState == EButtonState::Hovered)
 	{
 		if (ClickKeyList.Contains(_mouse_event.GetEffectingButton()))
 		{
@@ -65,7 +65,7 @@ FReply URadioButton::NativeOnMouseButtonDown(const FGeometry& _geo, const FPoint
 	return GetReply();
 }
 
-FReply URadioButton::NativeOnMouseButtonUp(const FGeometry& _geo, const FPointerEvent& _mouse_event)
+FReply UToggleButton::NativeOnMouseButtonUp(const FGeometry& _geo, const FPointerEvent& _mouse_event)
 {
 	Super::NativeOnMouseButtonUp(_geo, _mouse_event);
 
@@ -73,23 +73,23 @@ FReply URadioButton::NativeOnMouseButtonUp(const FGeometry& _geo, const FPointer
 	{
 		SetButtonState(EButtonState::Disabled);
 	}
-	else if (_IsSelected == false && _ButtonState == EButtonState::Pressed)
+	else if (_ButtonState == EButtonState::Pressed)
 	{
 		if (ClickKeyList.Contains(_mouse_event.GetEffectingButton()))
 		{
-			SetIsSelected(true);
+			ToggleSelected();
 
 			if (_OnButtonClicked.IsBound())
-				_OnButtonClicked.Broadcast(this);
+				_OnButtonClicked.Broadcast(this, _IsSelected);
 
-			SetButtonState(EButtonState::Normal);
+			ResetButtonState();
 		}
 	}
 
 	return GetReply();
 }
 
-void URadioButton::SetIsSelected(bool _is_selected)
+void UToggleButton::SetIsSelected(bool _is_selected)
 {
 	if (_IsSelected == _is_selected)
 		return;
@@ -99,7 +99,13 @@ void URadioButton::SetIsSelected(bool _is_selected)
 	UpdateButtonStyle();
 }
 
-void URadioButton::OnSelectChanged_Implementation()
+bool UToggleButton::ToggleSelected()
+{
+	SetIsSelected(!_IsSelected);
+	return _IsSelected;
+}
+
+void UToggleButton::OnSelectChanged_Implementation()
 {
 	if (_IsSelected)
 	{
@@ -111,7 +117,7 @@ void URadioButton::OnSelectChanged_Implementation()
 	}
 }
 
-void URadioButton::UpdateButtonStyle()
+void UToggleButton::UpdateButtonStyle()
 {
 	if (_IsSelected)
 	{

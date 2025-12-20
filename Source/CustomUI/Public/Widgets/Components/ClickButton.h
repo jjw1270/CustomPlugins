@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Widgets/Components/Buttons/ButtonBase.h"
+#include "Components/ButtonBase.h"
 #include "ClickButton.generated.h"
 
 /**

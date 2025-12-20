@@ -1,5 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
+using System.IO;
 using UnrealBuildTool;
 
 public class CustomUI : ModuleRules
@@ -10,9 +11,10 @@ public class CustomUI : ModuleRules
 		
 		PublicIncludePaths.AddRange(
 			new string[] {
+                Path.Combine(ModuleDirectory, "Public/Widgets"),
 				// ... add public include paths required here ...
 			}
-			);
+            );
 				
 		
 		PrivateIncludePaths.AddRange(
