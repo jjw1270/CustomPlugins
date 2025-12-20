@@ -41,7 +41,7 @@ protected:
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "RadioButtonGroup")
-	TEnumAsByte<EOrientation> _Orientation;
+	TEnumAsByte<EOrientation> _Orientation = EOrientation::Orient_Horizontal;
 
 	UPROPERTY(EditAnywhere, Category = "RadioButtonGroup")
 	FMargin _ButtonPadding = FMargin();

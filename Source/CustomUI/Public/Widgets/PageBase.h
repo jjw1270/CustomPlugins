@@ -9,7 +9,7 @@
 /**
  *
  */
-UCLASS(Abstract, HideDropdown)
+UCLASS(Abstract)
 class CUSTOMUI_API UPageBase : public UWidgetBase
 {
 	GENERATED_BODY()
