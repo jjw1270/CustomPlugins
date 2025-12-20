@@ -27,6 +27,8 @@ public class CustomUI : ModuleRules
 			{
 				"Core",
                 "CommonLibrary",
+                "Slate",
+                "SlateCore",
                 "UMG"
             }
 			);
@@ -38,8 +40,6 @@ public class CustomUI : ModuleRules
 				"CoreUObject",
 				"Engine",
                 "InputCore",
-                "Slate",
-				"SlateCore"
 			}
             );
 		
