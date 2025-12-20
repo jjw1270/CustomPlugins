@@ -26,6 +26,9 @@ public:
 	virtual void Deinitialize() override;
 	virtual void PlayerControllerChanged(APlayerController* _new_pc) override;
 
+private:
+	AWidgetPlayerController* GetLocalPlayerController() const;
+
 protected:
 	void ClearAllWidgets(bool _clear_close_event);
 	void RebuildWidgets(AWidgetPlayerController* _pc);
@@ -76,12 +79,6 @@ UCLASS()
 class CUSTOMUI_API UWidgetHelpers : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
-
-public:
-	static UWidgetSubsystem* GetWidgetSubsystem(const UObject* _world_ctx);
-
-private:
-	static AWidgetPlayerController* GetPlayerController(const UObject* _world_ctx);
 
 public:
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "_world_ctx"))

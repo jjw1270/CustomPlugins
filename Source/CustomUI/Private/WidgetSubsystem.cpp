@@ -14,6 +14,18 @@ void UWidgetSubsystem::Deinitialize()
 	ClearAllWidgets(true);
 }
 
+AWidgetPlayerController* UWidgetSubsystem::GetLocalPlayerController() const
+{
+	auto world = GetWorld();
+	auto local_player = GetLocalPlayer();
+	if (IsAllValid(world, local_player))
+	{
+		return Cast<AWidgetPlayerController>(local_player->GetPlayerController(world));
+	}
+
+	return nullptr;
+}
+
 void UWidgetSubsystem::PlayerControllerChanged(APlayerController* _new_pc)
 {
 	ClearAllWidgets(true);
@@ -68,11 +80,7 @@ void UWidgetSubsystem::RebuildWidgets(AWidgetPlayerController* _pc)
 
 UPageBase* UWidgetSubsystem::CreatePage(TSubclassOf<UPageBase> _page_class)
 {
-	auto local_player = GetLocalPlayer();
-	if (IsInvalid(local_player))
-		return nullptr;
-
-	auto pc = Cast<AWidgetPlayerController>(local_player->GetPlayerController(GetWorld()));
+	auto pc = GetLocalPlayerController();
 	if (IsInvalid(pc))
 		return nullptr;
 
@@ -142,14 +150,9 @@ UPageBase* UWidgetSubsystem::CreatePage(TSubclassOf<UPageBase> _page_class)
 
 UPopupBase* UWidgetSubsystem::CreatePopup(TSubclassOf<UPopupBase> _popup_class)
 {
-	auto local_player = GetLocalPlayer();
-	if (IsInvalid(local_player))
-		return nullptr;
-
-	auto pc = Cast<AWidgetPlayerController>(local_player->GetPlayerController(GetWorld()));
+	auto pc = GetLocalPlayerController();
 	if (IsInvalid(pc))
 		return nullptr;
-
 
 	if (CanOpenPopup(_popup_class) == false)
 		return nullptr;
@@ -181,11 +184,7 @@ void UWidgetSubsystem::OnPopupClosed(UWidgetBase* _widget, bool _is_removed)
 	if (IsInvalid(popup))
 		return;
 
-	auto local_player = GetLocalPlayer();
-	if (IsInvalid(local_player))
-		return;
-
-	auto pc = Cast<AWidgetPlayerController>(local_player->GetPlayerController(GetWorld()));
+	auto pc = GetLocalPlayerController();
 	if (IsInvalid(pc))
 		return;
 
@@ -264,29 +263,9 @@ bool UWidgetSubsystem::IsPopupOpened(TSubclassOf<UPopupBase> _popup_class) const
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 
-UWidgetSubsystem* UWidgetHelpers::GetWidgetSubsystem(const UObject* _world_ctx)
-{
-	return UCommonUtils::GetLocalPlayerSubsystem<UWidgetSubsystem>(_world_ctx);
-}
-
-AWidgetPlayerController* UWidgetHelpers::GetPlayerController(const UObject* _world_ctx)
-{
-	auto widget_subsys = GetWidgetSubsystem(_world_ctx);
-	if (IsValid(widget_subsys))
-	{
-		auto local_player = widget_subsys->GetLocalPlayer();
-		if (IsValid(local_player))
-		{
-			return Cast<AWidgetPlayerController>(local_player->GetPlayerController(widget_subsys->GetWorld()));
-		}
-	}
-
-	return nullptr;
-}
-
 UPageBase* UWidgetHelpers::OpenPage(const UObject* _world_ctx, TSubclassOf<UPageBase> _page_class)
 {
-	auto widget_subsys = GetWidgetSubsystem(_world_ctx);
+	auto widget_subsys = UCommonUtils::GetLocalPlayerSubsystem<UWidgetSubsystem>(_world_ctx);
 	if (IsValid(widget_subsys))
 	{
 		return widget_subsys->CreatePage(_page_class);
@@ -297,7 +276,7 @@ UPageBase* UWidgetHelpers::OpenPage(const UObject* _world_ctx, TSubclassOf<UPage
 
 UPopupBase* UWidgetHelpers::OpenPopup(const UObject* _world_ctx, TSubclassOf<UPopupBase> _popup_class)
 {
-	auto widget_subsys = GetWidgetSubsystem(_world_ctx);
+	auto widget_subsys = UCommonUtils::GetLocalPlayerSubsystem<UWidgetSubsystem>(_world_ctx);
 	if (IsValid(widget_subsys))
 	{
 		return widget_subsys->CreatePopup(_popup_class);
@@ -316,7 +295,7 @@ void UWidgetHelpers::ClosePopup(UPopupBase* _popup, bool _force_immediately)
 
 UPopupBase* UWidgetHelpers::GetTopPopup(const UObject* _world_ctx)
 {
-	auto widget_subsys = GetWidgetSubsystem(_world_ctx);
+	auto widget_subsys = UCommonUtils::GetLocalPlayerSubsystem<UWidgetSubsystem>(_world_ctx);
 	if (IsValid(widget_subsys))
 	{
 		return widget_subsys->GetTopPopup();
