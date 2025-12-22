@@ -10,7 +10,7 @@ void UWidgetBase::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
-	OnNativeVisibilityChanged.Clear();
+	OnNativeVisibilityChanged.RemoveAll(this);
 	OnNativeVisibilityChanged.AddUObject(this, &UWidgetBase::OnVisibilityChanged);
 }
 
