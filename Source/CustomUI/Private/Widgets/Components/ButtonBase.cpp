@@ -4,7 +4,9 @@
 #include "Components/ButtonBase.h"
 #include "Components/SizeBox.h"
 #include "Components/Border.h"
+#include "Components/BorderSlot.h"
 #include "Components/CanvasPanelSlot.h"
+#include "Components/NamedSlot.h"
 
 
 TSet<FKey> UButtonBase::ClickKeyList =
@@ -38,35 +40,9 @@ void UButtonBase::SynchronizeProperties()
 {
 	Super::SynchronizeProperties();
 
-	if (IsValid(SizeBox))
-	{
-		SizeBox->SetVisibility(ESlateVisibility::Visible);
-
-		auto sizebox_slot = Cast<UCanvasPanelSlot>(SizeBox->Slot);
-		if (IsValid(sizebox_slot))
-		{
-			sizebox_slot->SetAnchors(_UseFixedSize ? FAnchors(0.5f) : FAnchors(0.0f, 0.0f, 1.0f, 1.0f));
-
-			sizebox_slot->SetPosition(FVector2D(0.0f));
-			sizebox_slot->SetAlignment(FVector2D(0.5f));
-			sizebox_slot->SetSize(FVector2D(0.0f));
-
-			sizebox_slot->SetAutoSize(true);
-		}
-
-		if (_UseFixedSize)
-		{
-			SizeBox->SetWidthOverride(_FixedSize.X);
-			SizeBox->SetHeightOverride(_FixedSize.Y);
-		}
-		else
-		{
-			SizeBox->ClearWidthOverride();
-			SizeBox->ClearHeightOverride();
-		}
-	}
-
+	UpdateButtonSize();
 	UpdateButtonStyle();
+	UpdateContentSlotAlignment();
 }
 
 void UButtonBase::SetButtonDisabled(bool _is_disabled)
@@ -109,6 +85,37 @@ void UButtonBase::SetButtonState(EButtonState _state)
 	OnButtonStateChanged();
 }
 
+void UButtonBase::UpdateButtonSize()
+{
+	if (IsValid(SizeBox))
+	{
+		SizeBox->SetVisibility(ESlateVisibility::Visible);
+
+		auto sizebox_slot = Cast<UCanvasPanelSlot>(SizeBox->Slot);
+		if (IsValid(sizebox_slot))
+		{
+			sizebox_slot->SetAnchors(_UseFixedSize ? FAnchors(0.5f) : FAnchors(0.0f, 0.0f, 1.0f, 1.0f));
+
+			sizebox_slot->SetPosition(FVector2D(0.0f));
+			sizebox_slot->SetAlignment(FVector2D(0.5f));
+			sizebox_slot->SetSize(FVector2D(0.0f));
+
+			sizebox_slot->SetAutoSize(true);
+		}
+
+		if (_UseFixedSize)
+		{
+			SizeBox->SetWidthOverride(_FixedSize.X);
+			SizeBox->SetHeightOverride(_FixedSize.Y);
+		}
+		else
+		{
+			SizeBox->ClearWidthOverride();
+			SizeBox->ClearHeightOverride();
+		}
+	}
+}
+
 void UButtonBase::UpdateButtonStyle()
 {
 	auto style_ptr = _StateStyles.Find(_ButtonState);
@@ -118,6 +125,19 @@ void UButtonBase::UpdateButtonStyle()
 		{
 			Border->SetBrush(style_ptr->Brush);
 			Border->SetContentColorAndOpacity(style_ptr->ContentColor);
+		}
+	}
+}
+
+void UButtonBase::UpdateContentSlotAlignment()
+{
+	if (IsValid(NS_Content))
+	{
+		auto slot = Cast<UBorderSlot>(NS_Content->Slot);
+		if (IsValid(slot))
+		{
+			slot->SetHorizontalAlignment(_ContentHorizontalAlignment);
+			slot->SetVerticalAlignment(_ContentVerticalAlignment);
 		}
 	}
 }

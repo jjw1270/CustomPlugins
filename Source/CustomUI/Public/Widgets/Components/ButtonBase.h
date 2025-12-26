@@ -59,6 +59,12 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Button")
 	TMap<EButtonState, FButtonStyleConfig> _StateStyles;
 
+	UPROPERTY(EditAnywhere, Category = "Button")
+	TEnumAsByte<EHorizontalAlignment> _ContentHorizontalAlignment = EHorizontalAlignment::HAlign_Center;
+
+	UPROPERTY(EditAnywhere, Category = "Button")
+	TEnumAsByte<EVerticalAlignment> _ContentVerticalAlignment = EVerticalAlignment::VAlign_Center;
+
 	UPROPERTY(EditAnywhere, Category = "Sound")
 	TObjectPtr<USoundCue> _HoverSound = nullptr;
 	
@@ -100,5 +106,7 @@ protected:
 	void OnButtonStateChanged();
 	virtual void OnButtonStateChanged_Implementation() {};
 
+	virtual void UpdateButtonSize();
 	virtual void UpdateButtonStyle();
+	virtual void UpdateContentSlotAlignment();
 };
