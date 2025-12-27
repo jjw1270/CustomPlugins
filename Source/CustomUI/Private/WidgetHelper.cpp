@@ -12,7 +12,7 @@ UPageBase* UWidgetHelper::OpenPage(const UObject* _world_ctx, TSubclassOf<UPageB
 	auto widget_subsys = UCommonUtils::GetLocalPlayerSubsystem<UWidgetSubsystem>(_world_ctx);
 	if (IsValid(widget_subsys))
 	{
-		return widget_subsys->CreatePage(_page_class);
+		return widget_subsys->OpenPage(_page_class);
 	}
 
 	return nullptr;
@@ -23,7 +23,7 @@ UPopupBase* UWidgetHelper::OpenPopup(const UObject* _world_ctx, TSubclassOf<UPop
 	auto widget_subsys = UCommonUtils::GetLocalPlayerSubsystem<UWidgetSubsystem>(_world_ctx);
 	if (IsValid(widget_subsys))
 	{
-		return widget_subsys->CreatePopup(_popup_class);
+		return widget_subsys->OpenPopup(_popup_class);
 	}
 
 	return nullptr;

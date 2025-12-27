@@ -58,6 +58,9 @@ struct CUSTOMUI_API FPopupConfig
 
 public:
 	UPROPERTY(EditAnywhere)
+	bool IgnoreOtherPopup = false;
+
+	UPROPERTY(EditAnywhere)
 	bool AllowDuplicate = false;
 
 	UPROPERTY(EditAnywhere)

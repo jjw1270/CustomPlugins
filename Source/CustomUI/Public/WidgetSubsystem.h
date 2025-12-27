@@ -39,7 +39,7 @@ protected:
 	TObjectPtr<UPageBase> _CurrentPage = nullptr;
 
 protected:
-	UPageBase* CreatePage(TSubclassOf<UPageBase> _page_class);
+	UPageBase* OpenPage(TSubclassOf<UPageBase> _page_class);
 
 // getter
 protected:
@@ -57,14 +57,14 @@ protected:
 	TArray<TObjectPtr<UPopupBase>> _CurrentPopups;
 
 protected:
-	UPopupBase* CreatePopup(TSubclassOf<UPopupBase> _popup_class);
+	UPopupBase* OpenPopup(TSubclassOf<UPopupBase> _popup_class);
 
 	UFUNCTION() void OnPopupClosed(UWidgetBase* _widget, bool _is_removed);
 
 protected:
 	UPopupBase* GetTopPopup() const;
 
-	bool CanOpenPopup(TSubclassOf<UPopupBase> _popup_class) const;
+	bool CheckCanOpenPopup(TSubclassOf<UPopupBase> _popup_class) const;
 	bool IsPopupOpened(TSubclassOf<UPopupBase> _popup_class) const;
 
 #pragma endregion Popup

@@ -66,21 +66,21 @@ void UWidgetSubsystem::RebuildWidgets(AWidgetPlayerController* _pc)
 	// page
 	if (IsValid(_RemainingPageClass))
 	{
-		CreatePage(_RemainingPageClass);
+		OpenPage(_RemainingPageClass);
 	}
 	else
 	{
-		CreatePage(_pc->GetInitialPageClass());
+		OpenPage(_pc->GetInitialPageClass());
 	}
 
 	// popups
 	for (const auto& remaining_popup_class : _RemainingPopupClasses)
 	{
-		CreatePopup(remaining_popup_class);
+		OpenPopup(remaining_popup_class);
 	}
 }
 
-UPageBase* UWidgetSubsystem::CreatePage(TSubclassOf<UPageBase> _page_class)
+UPageBase* UWidgetSubsystem::OpenPage(TSubclassOf<UPageBase> _page_class)
 {
 	auto pc = GetLocalPlayerController();
 	if (IsInvalid(pc))
@@ -150,13 +150,13 @@ UPageBase* UWidgetSubsystem::CreatePage(TSubclassOf<UPageBase> _page_class)
 	return _CurrentPage;
 }
 
-UPopupBase* UWidgetSubsystem::CreatePopup(TSubclassOf<UPopupBase> _popup_class)
+UPopupBase* UWidgetSubsystem::OpenPopup(TSubclassOf<UPopupBase> _popup_class)
 {
 	auto pc = GetLocalPlayerController();
 	if (IsInvalid(pc))
 		return nullptr;
 
-	if (CanOpenPopup(_popup_class) == false)
+	if (CheckCanOpenPopup(_popup_class) == false)
 		return nullptr;
 
 	auto popup = CreateWidget<UPopupBase>(pc, _popup_class);
@@ -224,7 +224,7 @@ UPopupBase* UWidgetSubsystem::GetTopPopup() const
 	return nullptr;
 }
 
-bool UWidgetSubsystem::CanOpenPopup(TSubclassOf<UPopupBase> _popup_class) const
+bool UWidgetSubsystem::CheckCanOpenPopup(TSubclassOf<UPopupBase> _popup_class) const
 {
 	if (IsInvalid(_popup_class))
 	{
@@ -232,7 +232,7 @@ bool UWidgetSubsystem::CanOpenPopup(TSubclassOf<UPopupBase> _popup_class) const
 		return false;
 	}
 
-	auto default_class = _popup_class.GetDefaultObject();
+	const auto default_class = _popup_class.GetDefaultObject();
 	if (IsInvalid(default_class))
 		return false;
 
@@ -241,6 +241,16 @@ bool UWidgetSubsystem::CanOpenPopup(TSubclassOf<UPopupBase> _popup_class) const
 		if (IsPopupOpened(_popup_class))
 		{
 			TRACE_WARNING(TEXT("이미 열려있습니다 : %s"), *_popup_class->GetName());
+			return false;
+		}
+	}
+
+	const auto top_popup = GetTopPopup();
+	if (IsValid(top_popup))
+	{
+		if (top_popup->GetConfig().IgnoreOtherPopup)
+		{
+			TRACE_WARNING(TEXT("Popop Ignored : %s"), *_popup_class->GetName());
 			return false;
 		}
 	}
