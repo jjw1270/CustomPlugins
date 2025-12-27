@@ -78,29 +78,25 @@ void UWidgetBase::SetWidgetState(EWidgetState _new_state)
 {
 	if (_WidgetState == _new_state)
 		return;
-
-	EWidgetState _old_state = _WidgetState;
 	_WidgetState = _new_state;
 
-	OnWidgetStateChanged(_old_state);
-}
-
-void UWidgetBase::OnWidgetStateChanged_Implementation(EWidgetState _old_state)
-{
 	// broadcast events
 	switch (_WidgetState)
 	{
 	case EWidgetState::Hide:
 		if (_OnCloseEvent.IsBound())
 			_OnCloseEvent.Broadcast(this, (_WidgetHideType == EWidgetHideType::RemoveFromParent));
+		OnClose();
 		break;
 	case EWidgetState::Showing:
 		if (_OnShowEvent.IsBound())
 			_OnShowEvent.Broadcast(this);
+		OnShow();
 		break;
 	case EWidgetState::Idle:
 		if (_OnIdleEvent.IsBound())
 			_OnIdleEvent.Broadcast(this);
+		OnIdle();
 		break;
 	default:
 		break;
@@ -152,6 +148,7 @@ void UWidgetBase::OnWidgetStateChanged_Implementation(EWidgetState _old_state)
 			SetWidgetState(EWidgetState::Hide);
 		}
 	}
+
 }
 
 void UWidgetBase::Hide(EWidgetHideType _type, bool _force_immediately)

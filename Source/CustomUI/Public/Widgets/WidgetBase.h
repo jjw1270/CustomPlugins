@@ -84,11 +84,6 @@ private:
 	void SetWidgetState(EWidgetState _new_state);
 	void HideWidget();
 
-protected:
-	UFUNCTION(BlueprintNativeEvent)
-	void OnWidgetStateChanged(EWidgetState _old_state);
-	virtual void OnWidgetStateChanged_Implementation(EWidgetState _old_state);
-
 #pragma region Event
 public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDM_OnShowWidget, UWidgetBase*, _widget);
@@ -103,6 +98,19 @@ public:
 
 	UPROPERTY(BlueprintAssignable, BlueprintReadOnly)
 	FDM_OnCloseWidget _OnCloseEvent;
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnShow();
+	virtual void OnShow_Implementation() {};
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnIdle();
+	virtual void OnIdle_Implementation() {};
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnClose();
+	virtual void OnClose_Implementation() {};
+
 #pragma endregion Event
 
 // Getters
